@@ -1,0 +1,306 @@
+
+Unified Sports Interface — Athlete Management System
+Product Thinking Document · APM machine test for Khelo Tech · 13 October 2026
+Summary
+Every athlete in a federation is looked after by six to eight people: coach, physio, doctor, sports scientist, nutritionist and office staff. Each of them keeps their piece of the athlete in a different place. Decisions about training, injury and selection are made late and on half the picture, and nobody above the squad can see the whole programme.
+The Athlete Management System (AMS) inside the Unified Sports Interface (USI) gives each athlete one shared record that every role works from. Work moves between people as tracked steps with a clear owner, and an AI layer spots problems early and suggests the next step.
+Designed for: a national or state federation running many centres across many sports, such as federations working with Sports Authority of India (SAI) and Khelo India centres.
+Demo story: Priya, a 16-year-old sprinter, followed from her first field test to an injury and her safe return to training.
+Built deepest in the prototype: Medical & injury, Athlete onboarding & approval, Dashboard / Command Center, and Training & workload. The other five modules are present and connected, but lighter (section 7 explains why).
+1. The problem
+An athlete's story is split across seven places, so nobody sees the whole athlete in time to act.
+
+Figure 1 · Where one athlete's information lives today · 7 places
+Seven people each hold one piece of the athlete, in seven different places, and none of them sees the whole picture.
+What goes wrong because of this:
+What breaks
+ | What it looks like on the ground
+ | Nobody sees the whole athlete
+ | The physio notices fatigue, the coach doesn't know and runs a heavy session, and the athlete gets injured.
+ | Hand-offs get lost
+ | Injury → physio → doctor → rehab → coach happens over calls and WhatsApp. Steps are skipped and athletes return too early or too late.
+ | Problems are found too late
+ | Overload and fatigue are noticed after the injury, not before it.
+ | Leaders can't see across centres
+ | A director waits for hand-made monthly reports to compare centres or spot rising injuries.
+ | Talent gets missed
+ | Test results sit in files, so a strong 14-year-old in one district is never compared with others nationally.
+ | Athletes stop logging
+ | Long forms mean few athletes fill them in, which means poor data and poor decisions.
+ | Documents are hard to trust
+ | Identity and age proof are hard to check at scale, which matters a lot in youth sport.
+ | 
+Problem statement. Each athlete is looked after by many specialists, and each holds one piece of that athlete's information in a different tool. So decisions are made late and on incomplete information, and leaders cannot see the system as a whole.
+2. Who it's for
+Eleven kinds of users share one athlete record, but the product only works if athletes and coaches use it every day.
+
+Figure 2 · Who uses the AMS · 4 groups, 11 roles
+The four groups use the same record at different rhythms: athletes on a phone every morning, practitioners every day, leaders every week.
+The brief names eight roles. Three more are added because real workflows need them: a team doctor (gives final medical clearance), a parent or guardian (gives consent for athletes under 18), and a talent scout (uses test results to pick squads).
+Who hands work to whom. Every row below is a moment that today gets lost in a phone call or a WhatsApp message. In the product, each becomes a tracked step with an owner.
+From
+ | Hands over
+ | To
+ | Operations team
+ | An approved, verified athlete
+ | Coach
+ | Athlete
+ | Morning check-in and effort rating after training
+ | Coach, sports scientist
+ | Sports scientist
+ | A warning that an athlete is overloaded
+ | Coach
+ | Coach or athlete
+ | An injury report
+ | Physio
+ | Physio
+ | A case that needs a diagnosis
+ | Team doctor
+ | Team doctor
+ | Clearance to return
+ | Coach
+ | Everyone
+ | Information that adds up across squads and centres
+ | Performance director
+ | 
+The buyer is not the daily user. The federation or performance director buys the system for its dashboards. Athletes, coaches and physios are the ones who enter information and act on it. If they don't, the director's dashboard is empty. So the design is built around three people:
+Athlete: the morning check-in takes under 30 seconds on a phone.
+Coach: the readiness view is worth opening before every session.
+Physio: logging an injury is faster than the paper file.
+3. How the product is organised
+One athlete record sits at the centre. Six modules do the work in the order of an athlete's journey, three layers see across all of them, and everything sits on services USI already shares.
+
+Figure 3 · Product map · 3 layers, 1 record, 6 modules, shared services
+Read it top to bottom: the layers look, the record holds, the modules do, and USI provides the plumbing underneath.
+The nine modules in the brief are not nine separate apps. Each of the six "doing" modules is one person's piece of the athlete, and the three "seeing" layers are how leaders and the AI look across the pieces.
+The organisation ladder
+Federation → State → Centre → Sport → Squad → Athlete
+The ladder does three jobs at once:
+Filters: what you are looking at ("U-17 sprints at the Pune centre").
+Permissions: what you are allowed to see (a coach sees only their squads).
+Roll-up: how squad numbers add up to the centre, the state and the nation.
+Two design choices make it work in real life:
+Home centre and temporary assignment. Priya trains at her home academy but may join a six-week national camp. The camp coach sees her training and readiness during the camp; her home centre keeps the full record.
+Two ways to look. Leaders can look by organisation ("everything at the Pune centre") or by sport ("all sprinters in Maharashtra").
+Two kinds of status per athlete
+Status
+ | Question it answers
+ | Values
+ | Changes
+ | Enrollment
+ | Is this athlete in our programme?
+ | Prospect, Applied, Verifying, Active, Transferred, Inactive, Retired
+ | Rarely
+ | Availability
+ | Can this athlete train today?
+ | Available, Modified (train with limits), Unavailable
+ | Daily
+ | 
+An athlete can be Active but Unavailable. Keeping the two apart keeps reports honest.
+4. Key workflows
+Four workflows carry the product. Every step has an owner and a status, so nothing waits unseen in someone's phone.
+4.1 Athlete onboarding and approval
+The record every other module depends on starts here.
+
+Figure 4 · Onboarding and approval · 6 steps, 1 check, 1 loop back
+A document problem loops back to the athlete with a reason instead of stalling silently; only a verified athlete reaches a coach.
+Missing or unclear document: sent back to the athlete with the reason; the clock is visible to ops.
+Possible duplicate athlete: the system shows the match and asks ops to merge or confirm.
+Not eligible: rejected with a logged reason, so it can be reviewed later.
+Under 18: a parent or guardian must give consent before medical information can be recorded.
+4.2 The daily training loop
+The heartbeat of the product. It runs every training day and is what keeps the dashboard live.
+
+Figure 5 · The daily training loop · 8 steps
+Athletes give two small inputs a day; the system does the maths, and the AI turns it into a warning the coach can act on with one tap.
+Time
+ | What happens
+ | What the system does
+ | 6:30 AM
+ | Athletes answer five quick questions on their phone: sleep, soreness, mood, stress, energy
+ | Works out a readiness score for each athlete
+ | 7:00 AM
+ | Coach opens the squad view
+ | Shows how many athletes are green, amber or red, and why
+ | 7:05 AM
+ | Priya is red: high soreness and a sudden jump in her training load
+ | Suggests a lighter session for her; the coach accepts with one tap
+ | 7:30 AM
+ | Session starts
+ | Attendance marked; GPS and heart-rate devices start recording
+ | After session
+ | Each athlete rates how hard it felt, from 1 to 10
+ | Multiplies the rating by minutes trained to get the session's load
+ | Weekly
+ | Director reviews the centre
+ | Shows injuries, check-in rates and readiness trends across centres
+ | 
+Planning in three sizes. Coaches plan the season (the big picture, built around competition dates), then blocks of a few weeks with one focus (for example speed), then the week and each session. The session builder pulls drills from a shared exercise library and assigns them to a squad. Athletes marked Modified or Unavailable get an adjusted version automatically.
+The one number that matters most. The system compares an athlete's load this week with their average over the last four weeks. A sudden jump well above their normal is the strongest early warning of injury. Sports scientists call this the acute-to-chronic workload ratio (ACWR); in the product it is shown simply as a "load jump" flag.
+4.3 Injury to return-to-play
+The brief's priority module, and the moment where the most people get involved.
+
+Figure 6 · Injury to return-to-play · 7 steps, 2 decisions
+Small issues take the light path; serious ones move through owned steps, and only a doctor's clearance sends the athlete back, with a limited load at first.
+Interactive body map. The physio taps the injured area on a front or back body view, picks the side and severity, and the region changes colour. Past injuries show as faded marks, so repeat problems stand out.
+Light path for small issues. Soreness or a niggle is flagged and watched without opening a full rehab case, so physios aren't buried in paperwork.
+Return-to-play stages. Rehab moves through stages, for example walking, jogging, running, sprinting, then full training. Each stage needs the physio's sign-off.
+Setback. A re-injury during rehab sends the athlete back a stage, with the reason logged.
+Disagreement. If physio and coach disagree on readiness, the team doctor decides, and the decision is recorded.
+Safe return. Fitness drops during time off, so jumping straight back to full training is when re-injury happens. After clearance, the system limits the athlete's load for the first weeks and raises it step by step.
+4.4 Coach assignment and the coach's week
+Once an athlete is approved, ops assigns a coach and a squad. The coach gets a notification, sees the athlete's profile and any open medical flags, and the athlete appears in that coach's next planned sessions.
+5. How the parts connect
+Information is entered once and reaches everyone who needs it. Three chains show why one shared record beats nine separate tools.
+
+Figure 7 · How the modules feed each other · 3 chains
+In each chain, one person enters something once and it changes what another person sees, without a phone call in between.
+Who sees what
+Your role decides what kind of information you see. Your place on the ladder decides which athletes you see.
+Role
+ | Training
+ | Readiness
+ | Medical
+ | Nutrition
+ | Documents
+ | Reports
+ | Athlete
+ | Own
+ | Own
+ | Own
+ | Own
+ | Own
+ | —
+ | Coach
+ | Edit own squads
+ | View
+ | Summary only
+ | View
+ | —
+ | Own squads
+ | Physio, team doctor
+ | View
+ | View
+ | Full, edit
+ | View
+ | Medical only
+ | Centre
+ | Sports scientist
+ | View
+ | Edit
+ | Summary only
+ | View
+ | —
+ | Centre
+ | Nutritionist
+ | View
+ | View
+ | Summary only
+ | Edit
+ | —
+ | Centre
+ | Performance director
+ | View
+ | View
+ | Summary only
+ | View
+ | —
+ | All, drill down
+ | Operations, admin
+ | —
+ | —
+ | None
+ | —
+ | Edit
+ | Operational only
+ | 
+"Summary only" means the coach sees Modified training: lower leg, not the diagnosis. Medical details stay with medical staff.
+Outside systems
+Wearables and GPS devices (for example Catapult, Garmin, WHOOP) connect through one import layer and are matched to the right athlete.
+Competition calendar comes from USI's competition module, so coaches can plan the season around real event dates.
+Exports for federation and government reporting, as PDF and Excel.
+6. Where AI helps
+AI works inside each workflow, not in a separate chat window. It watches, warns, drafts and suggests; a person confirms anything that changes an athlete's plan or medical status.
+
+Figure 8 · What the AI layer does · 6 jobs
+The left side acts inside workflows (warnings, suggestions, form filling); the right side helps people understand (summaries, patterns, answers).
+The AI Copilot is a panel available on every screen. It knows where you are and who you are: on Priya's profile, "how is she doing?" means Priya. Its answers come with actions, for example "3 sprinters are in the red today. Move them to the recovery session?", and one tap carries it out.
+Three rules keep the AI trustworthy:
+It always shows why. Every warning lists the numbers behind it (for example, sleep down three nights in a row and load up sharply).
+It never changes medical status on its own. It drafts; the physio or doctor decides.
+It compares each athlete with their own normal, not one fixed rule for everyone, because a heavy week for a 14-year-old is a light week for a senior athlete.
+7. What is built first, and why
+The prototype goes deep on the four modules where hand-offs and risk are greatest, and keeps the other five light but connected.
+Module
+ | Depth
+ | Why
+ | Medical & injury
+ | Deep
+ | Highest stakes and the brief's priority: interactive body map, rehab, return-to-play stages, doctor clearance
+ | Athlete onboarding & approval
+ | Deep
+ | Every other module depends on a clean, verified athlete record
+ | Dashboard / Command Center
+ | Deep
+ | Where coaches and leaders start their day; proves the ladder filters and role-based views
+ | Training & workload
+ | Deep
+ | The daily loop that feeds readiness, load warnings and injury risk
+ | AI Copilot
+ | Across every screen
+ | Shows AI working inside the four deep workflows
+ | Sports science
+ | Light
+ | Readiness and load charts, fed by Training
+ | Nutrition
+ | Light
+ | Diet plans, hydration and compliance
+ | Assessments & talent
+ | Light
+ | Field tests, benchmarks and a talent score
+ | Analytics & reports
+ | Light
+ | Federation drill-down and export
+ | 
+Trade-offs made on purpose:
+Depth over breadth. Four complete workflows that click through from start to finish are worth more than nine half-built screens.
+Realistic sample data. Indian centres, sports and athletes instead of empty templates, so every screen tells a believable story.
+Staff on laptop, athletes on phone. Staff screens are built for desktop; the athlete check-in and effort rating are designed for a phone.
+Left for later: offline use at grounds with poor network, regional languages, transfers between centres, and a full connection to competition management.
+8. How success is measured
+Daily use by athletes and coaches comes first; fewer injuries and better decisions follow from it. Each measure below is read in order: if the first layer fails, the later ones can't succeed.
+Layer
+ | Measure
+ | Why it matters
+ | Use
+ | Share of athletes completing the morning check-in
+ | No information in, no product
+ | Use
+ | Share of sessions where the coach checked readiness first
+ | Coaches are acting on it
+ | Workflow
+ | Time from injury reported to rehab plan in place
+ | Hand-offs are working
+ | Workflow
+ | Share of athlete profiles complete and verified
+ | The shared record can be trusted
+ | Outcome
+ | Injuries per 1,000 training hours
+ | The real goal
+ | Outcome
+ | Re-injuries after return to play
+ | The return process is safe
+ | Leadership
+ | Reports produced automatically instead of by hand
+ | Time given back to leaders
+ | AI
+ | Share of AI warnings that staff act on
+ | Warnings are useful, not noise
+ | 
+9. Assumptions and open questions
+Assumptions made:
+The first customer is a federation with many centres and many sports; examples use athletics.
+USI already provides login, the athlete ID, the organisation ladder, permissions and notifications; the AMS uses them rather than rebuilding them.
+Wearable data arrives through connections with device makers; the product does not build its own devices.
+Medical and personal data follow India's Digital Personal Data Protection Act, with guardian consent for athletes under 18.
+
