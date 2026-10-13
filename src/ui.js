@@ -237,7 +237,7 @@
     }, [rows, sort]);
     return html`<div className="tbl-wrap" style=${maxHeight ? { maxHeight, overflowY: 'auto' } : null}>
       <table className=${AMS.cx('tbl', compact && 'compact')}>
-        <thead><tr>${columns.map((c) => html`<th key=${c.key} className=${AMS.cx(c.num && 'num', c.hideSm && 'hide-sm')} style=${{ width: c.width, cursor: c.sort !== false ? 'pointer' : 'default' }} onClick=${() => c.sort !== false && setSort((s) => ({ key: c.key, dir: s && s.key === c.key && s.dir === 'asc' ? 'desc' : 'asc' }))}>${c.label}${sort && sort.key === c.key && html` <${UI.Icon} name=${sort.dir === 'asc' ? 'arrow-up' : 'arrow-down'} size=${10} />`}</th>`)}</tr></thead>
+        <thead><tr>${columns.map((c) => html`<th key=${c.key} className=${AMS.cx(c.num && 'num', c.hideSm && 'hide-sm')} style=${{ width: c.width, cursor: c.sort !== false ? 'pointer' : 'default' }} onClick=${() => c.sort !== false && setSort((s) => ({ key: c.key, dir: s && s.key === c.key && s.dir === 'asc' ? 'desc' : 'asc' }))}>${c.label}${sort && sort.key === c.key && html`<${UI.Icon} name=${sort.dir === "asc" ? "arrow-up" : "arrow-down"} size=${10} style=${{ marginLeft: 3, verticalAlign: -1 }} />`}</th>`)}</tr></thead>
         <tbody>
           ${sorted.length === 0 && html`<tr><td colSpan=${columns.length}><${UI.Empty} icon="search" title=${empty || 'Nothing here'} /></td></tr>`}
           ${sorted.map((r, i) => html`<tr key=${rowKey ? rowKey(r) : r.id || i} className=${AMS.cx(onRow && 'clickable', selectedId && r.id === selectedId && 'selected')} onClick=${onRow ? () => onRow(r) : undefined} style=${onRow ? { cursor: 'pointer' } : null}>
@@ -343,10 +343,13 @@
     const [hover, setHover] = useState(null);
     const pad = { l: 38, r: 12, t: 10, b: 24 };
     const n = Math.max(...series.map((s) => s.data.length), 1);
-    const all = series.flatMap((s) => s.data.map((p) => p.y)).filter((v) => v != null);
+    const all = series.flatMap((s) => s.data.map((p) => p.y)).filter((v) => v != null && !isNaN(v));
+    if (!all.length) return html`<div ref=${ref} style=${{ height: H, display: 'grid', placeItems: 'center' }} className="small faint">No data for this selection</div>`;
     let lo = yMin != null ? yMin : Math.min(...all, ...(bands || []).map((b) => b.from), ...(refs || []).map((r) => r.y));
     let hi = yMax != null ? yMax : Math.max(...all, ...(bands || []).map((b) => b.to), ...(refs || []).map((r) => r.y));
+    if (!isFinite(lo)) lo = Math.min(...all); if (!isFinite(hi)) hi = Math.max(...all);
     if (yMin == null) lo = lo - (hi - lo) * 0.08; if (yMax == null) hi = hi + (hi - lo) * 0.08; if (hi === lo) hi = lo + 1;
+    bands = (bands || []).filter((b) => isFinite(b.from) && isFinite(b.to)); refs = (refs || []).filter((r) => isFinite(r.y));
     const ticks = niceTicks(lo, hi, 4).filter((t) => t >= lo && t <= hi);
     const X = (i) => pad.l + (n === 1 ? 0 : (i / (n - 1)) * (W - pad.l - pad.r));
     const Y = (v) => pad.t + (1 - (v - lo) / (hi - lo)) * (H - pad.t - pad.b);
@@ -388,6 +391,7 @@
     const [hover, setHover] = useState(null);
     const pad = { l: 38, r: 8, t: 10, b: 26 };
     const ks = keys || [{ name: 'Value', tone: tone || 'accent' }];
+    if (!data || !data.length) return html`<div ref=${ref} style=${{ height: H, display: 'grid', placeItems: 'center' }} className="small faint">No data for this selection</div>`;
     const vals = data.map((d) => d.values || [d.value]);
     const hi0 = Math.max(...vals.map((v) => (stacked ? AMS.sum(v) : Math.max(...v))), refY || 0, 1);
     const ticks = niceTicks(0, hi0 * 1.05, 4); const hi = Math.max(ticks[ticks.length - 1], hi0);
@@ -436,7 +440,7 @@
     return html`<span style=${{ position: 'relative', width: s, height: s, display: 'inline-grid', placeItems: 'center', flex: 'none' }}>
       <svg width=${s} height=${s} style=${{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}>
         <circle cx=${s / 2} cy=${s / 2} r=${r} fill="none" stroke="var(--surface-3)" strokeWidth=${t} />
-        ${data.map((d, i) => { const len = (d.value / total) * c; const el = html`<circle key=${i} cx=${s / 2} cy=${s / 2} r=${r} fill="none" stroke=${col(d.tone || UI.CAT[i])} strokeWidth=${t} strokeDasharray=${Math.max(0, len - 1.5) + ' ' + c} strokeDashoffset=${-acc} style=${{ cursor: onSlice ? 'pointer' : 'default' }} onClick=${() => onSlice && onSlice(d)}><title>${d.label}: ${d.value}</title></circle>`; acc += len; return el; })}
+        ${data.map((d, i) => { const len = (d.value / total) * c; const el = html`<circle key=${i} cx=${s / 2} cy=${s / 2} r=${r} fill="none" stroke=${col(d.tone || UI.CAT[i])} strokeWidth=${t} strokeDasharray=${Math.max(0, len - 1.5) + ' ' + c} strokeDashoffset=${-acc} style=${{ cursor: onSlice ? 'pointer' : 'default' }} onClick=${() => onSlice && onSlice(d)}><title>${d.label + ': ' + d.value}</title></circle>`; acc += len; return el; })}
       </svg>
       <span style=${{ textAlign: 'center', lineHeight: 1.1 }}>${center}</span>
     </span>`;
@@ -453,7 +457,7 @@
         ${axes.map((ax, i) => { const [x, y] = pt(i, 100); const [lx, ly] = pt(i, 118); return html`<g key=${i}><line x1=${cx} y1=${cy} x2=${x} y2=${y} stroke="var(--chart-grid)" /><text x=${lx} y=${ly + 3} textAnchor="middle">${ax.label}</text></g>`; })}
         ${hasCmp && html`<polygon points=${poly('compare')} fill=${col(compareTone || 'fg-3')} fillOpacity="0.08" stroke=${col(compareTone || 'fg-3')} strokeDasharray="4 3" />`}
         <polygon points=${poly('value')} fill=${col(tone || 'accent')} fillOpacity="0.2" stroke=${col(tone || 'accent')} strokeWidth="2" />
-        ${axes.map((ax, i) => { const [x, y] = pt(i, ax.value || 0); return html`<circle key=${i} cx=${x} cy=${y} r="3" fill=${col(tone || 'accent')}><title>${ax.label}: ${Math.round(ax.value)}</title></circle>`; })}
+        ${axes.map((ax, i) => { const [x, y] = pt(i, ax.value || 0); return html`<circle key=${i} cx=${x} cy=${y} r="3" fill=${col(tone || 'accent')}><title>${ax.label + ': ' + Math.round(ax.value)}</title></circle>`; })}
       </svg>
       ${(label || hasCmp) && html`<div className="legend"><span><i style=${{ background: col(tone || 'accent') }} />${label || 'Athlete'}</span>${hasCmp && html`<span><i style=${{ background: col(compareTone || 'fg-3'), opacity: 0.5 }} />${compareLabel || 'Benchmark'}</span>`}</div>`}
     </div>`;

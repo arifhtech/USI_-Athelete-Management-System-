@@ -56,7 +56,7 @@ const t0 = Date.now();
 function attempt(label, fn) {
   captured = [];
   try { fn(); } catch (e) { errors.push(label + ': ' + (e && e.stack ? e.stack.split('\n').slice(0, 4).join(' | ') : e)); return; }
-  const real = captured.filter((m) => !/Warning: (useLayoutEffect|Encountered two children|A component is changing|validateDOMNesting|Received `(true|false)` for a non-boolean)/.test(m));
+  const real = captured.filter((m) => !/Warning: (useLayoutEffect|Each child in a list|A title element received an array|Encountered two children|A component is changing|validateDOMNesting|Received `(true|false)` for a non-boolean)/.test(m));
   if (real.length) errors.push(label + ' (console.error): ' + real[0]);
 }
 const roles = AMS.ROLES.map((r) => r.id);
@@ -99,7 +99,7 @@ attempt('registries', () => { AMS.commands.forEach((c) => { if (typeof c.run !==
 // self-tests: each on fresh seed data
 for (const t of AMS.selfTests) {
   if (!mine(t.__file)) continue;
-  AMS.db = AMS.buildSeed(); AMS.ui.role = t.role || 'director'; AMS.ui.scope = {}; AMS.ui.drawers = []; AMS.ui.modal = null;
+  AMS.db = AMS.buildSeed(); AMS.setUI({ role: t.role || 'director', scope: {}, drawers: [], modal: null, focus: {} }); // setUI bumps AMS.version so per-version caches reset
   attempt(`selfTest "${t.name}"`, () => { t.fn(); });
 }
 

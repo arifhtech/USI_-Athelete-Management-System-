@@ -658,7 +658,7 @@
       </div>
       <${UI.Card} title="Readiness heat map — last 14 mornings" icon="grid" hint=${'Squad avg today ' + avg + ' · each athlete is scored against their own normal'} actions=${filtered.length > 24 && html`<button className="btn ghost sm" onClick=${() => setShowAll(!showAll)}>${showAll ? 'Show worst 24' : 'Show all ' + filtered.length}</button>`}>
         ${gridRows.length ? html`<${UI.HeatGrid} rows=${gridRows} cols=${days.map((d) => D.dow(d).slice(0, 2) + ' ' + d.slice(8))} cellW=${30} labelW=${160} />` : html`<${UI.Empty} title="No athletes match these filters" />`}
-        <div className="legend" style=${{ marginTop: 8 }}><span><i style=${{ background: 'var(--good)' }} />Green ≥ 70</span><span><i style=${{ background: 'var(--warn)' }} />Amber 50–69</span><span><i style=${{ background: 'var(--bad)' }} />Red < 50</span><span className="faint">· = no check-in that morning. Readiness = 5-question wellness, minus a penalty when ACWR > 1.3.</span></div>
+        <div className="legend" style=${{ marginTop: 8 }}><span><i style=${{ background: 'var(--good)' }} />Green ≥ 70</span><span><i style=${{ background: 'var(--warn)' }} />Amber 50–69</span><span><i style=${{ background: 'var(--bad)' }} />Red under 50</span><span className="faint">· = no check-in that morning. Readiness = 5-question wellness, minus a penalty when ACWR > 1.3.</span></div>
       <//>
     </div>`;
   }
@@ -708,7 +708,7 @@
     const mono = useMemo(() => data.rows.map((r) => { const wl = C.weekLoad(r.a), prev = C.weekLoad(r.a, 1); return { id: r.id, a: r.a, wl, prev, chg: prev ? Math.round(((wl - prev) / prev) * 100) : 0, mono: C.monotony(r.a), strain: C.strain(r.a), acwr: r.acwr, rd: r.rd }; }), [data]);
     return html`<div className="col loose">
       <div className="grid g4">
-        <${UI.KPI} label="Overreaching zone" value=${zoneCount.over} foot="ACWR ≥ 1.3 and readiness < 50" tone=${zoneCount.over ? 'bad' : ''} icon="alert" />
+        <${UI.KPI} label="Overreaching zone" value=${zoneCount.over} foot="ACWR ≥ 1.3 and readiness under 50" tone=${zoneCount.over ? 'bad' : ''} icon="alert" />
         <${UI.KPI} label="Fatigued at normal load" value=${zoneCount.fat} foot="Look for non-training stress" tone=${zoneCount.fat ? 'warn' : ''} icon="moon" />
         <${UI.KPI} label="Coping with a load jump" value=${zoneCount.cope} foot="Monitor — fine today" icon="trend-up" />
         <${UI.KPI} label="Ready to train" value=${zoneCount.ready} foot=${'of ' + rows.length + ' available athletes'} tone="good" icon="check" />
@@ -834,7 +834,7 @@
           <div className="col">
             <${UI.HBars} data=${['Catapult', 'WHOOP', 'Polar', 'Garmin'].map((vd, i) => ({ label: vd, value: devs.filter((d) => d.vendor === vd && d.status !== 'Retired').length, tone: UI.CAT[i] }))} labelWidth=${80} />
             <div className="divider" />
-            <div className="row between small"><span className="muted">Low battery (< 20%)</span><b className=${lowBatt.length ? 'warn' : ''}>${lowBatt.length}</b></div>
+            <div className="row between small"><span className="muted">Low battery (under 20%)</span><b className=${lowBatt.length ? 'warn' : ''}>${lowBatt.length}</b></div>
             ${lowBatt.slice(0, 4).map((d) => html`<div key=${d.serial} className="row between tiny"><span className="ellipsis">${(AMS.org.athlete(d.athleteId) || {}).name} · ${d.vendor}</span><span className="warn">${d.battery}%</span></div>`)}
             <div className="row between small"><span className="muted">Retired this month</span><b>${devs.filter((d) => d.status === 'Retired').length}</b></div>
           </div>

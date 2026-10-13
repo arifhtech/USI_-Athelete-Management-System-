@@ -266,7 +266,7 @@
       const s = db.sessions.find((x) => x.squadId === sqid && x.date === yday);
       if (!s) return;
       const ids = Object.keys(s.rpe || {}).filter((id) => !named.has(id));
-      const drop = ids.filter((_, i) => i % 2 === 0).slice(0, Math.ceil(ids.length * 0.45));
+      const drop = ids.filter((_, i) => i % 2 === 0).concat(ids.filter((_, i) => i % 2 === 1)).slice(0, Math.max(5, Math.ceil(ids.length * 0.5)));
       drop.forEach((id) => { delete s.rpe[id]; const a = db.athletes.find((x) => x.id === id); if (a) a.loads[40] = 0; });
     });
     [['SQ-PUN-SPR17', 6, 4], ['SQ-PUN-SPR20', 4, 3], ['SQ-MUM-SPR17', 2, 4], ['SQ-SNP-BOXSR', 3, 3], ['SQ-PUN-JMP20', 5, 3]].forEach(([sqid, idx, n]) => {
@@ -1235,7 +1235,7 @@
         <${UI.KPI} label="Load jump (≥ 1.5)" value=${bands.bad} tone=${bands.bad ? 'bad' : ''} foot=${rows.filter((r) => r.acwr >= 1.5).map((r) => firstName(r.a)).join(', ') || 'nobody'} icon="alert" />
         <${UI.KPI} label="Rising (1.3–1.5)" value=${bands.warn} tone=${bands.warn ? 'warn' : ''} foot="watch these this week" icon="trend-up" />
         <${UI.KPI} label="Sweet spot (0.8–1.3)" value=${bands.good} foot=${pct(bands.good, rows.length) + '% of squad'} icon="check" />
-        <${UI.KPI} label="Under-loaded (< 0.8)" value=${bands.info} foot="returning or missed sessions" icon="trend-down" />
+        <${UI.KPI} label="Under-loaded (below 0.8)" value=${bands.info} foot="returning or missed sessions" icon="trend-down" />
       </div>
       <${UI.Card} title=${'Squad workload · ' + squadLabel(squadId)} icon="pulse" hint="click a row to chart the athlete · loads in AU (RPE × min)" flush>
         <${UI.Table} compact rows=${rows} selectedId=${sel && sel.id} onRow=${(r) => setSel(r.id)} initialSort=${{ key: 'acwr', dir: 'desc' }} columns=${[

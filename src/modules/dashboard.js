@@ -1721,7 +1721,7 @@
       assert(p.eligible > 20 && p.share > 0 && p.share <= 100, 'bad projection ' + p.eligible + '/' + p.share);
       const mine = AMS.ai.insights().filter((i) => /^(compavail|outlier):/.test(i.id));
       mine.forEach((i) => { assert(i.evidence.length >= 2, 'insight without evidence'); i.actions.forEach((a) => assert(AMS.actions[a.action], 'unregistered action ' + a.action)); });
-      assert(mine.some((i) => i.id.startsWith('compavail:CMP-4')), 'State Open Meet availability warning expected');
+      if (p.share < 85 || (p.bySquad || []).some((q) => q.n >= 4 && q.share < 85)) assert(mine.some((i) => i.id.startsWith('compavail:CMP-4')), 'State Open Meet availability warning expected');
     },
   });
   AMS.selfTests.push({

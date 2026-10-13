@@ -11,7 +11,7 @@
     html, React,
     TODAY: '2026-10-13',
     NOW_TIME: '07:05',
-    DATA_VERSION: 'usi-ams-v7',
+    DATA_VERSION: 'usi-ams-v9',
     modules: [], drawers: {}, modals: {}, panels: {}, actions: {}, detectors: [], commands: [], seeds: [], tickFns: [], selfTests: [],
   });
 

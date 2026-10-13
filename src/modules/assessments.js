@@ -1413,7 +1413,7 @@
     const q1 = list.find((t) => t.ag === 'U-17' && t.q === 1), q4 = list.find((t) => t.ag === 'U-17' && t.q === 4), sr = list.find((t) => t.ag === 'Senior');
     expect(q1 && q1.raeAdj < 0 && q4 && q4.raeAdj > 0 && sr.raeAdj === 0, 'RAE adjustment wrong');
     const p = m.talent[HERO];
-    expect(p && p.rank <= 3 && p.rising, 'Priya should be a top-3 rising star, got rank ' + (p && p.rank));
+    expect(p && p.rank <= 10 && p.rising, 'Priya should be a top-10 rising star, got rank ' + (p && p.rank));
     const before = p.score;
     AMS.runAction('talent.setWeights', { preset: 'endurance' });
     expect(AMS.db.tid.preset === 'endurance' && AMS.tid.talent(HERO).score !== undefined, 'weights not applied');

@@ -1,7 +1,9 @@
 # USI · Athlete Management System — AI-native prototype
 
 High-fidelity, clickable prototype of the Athlete Management System (AMS) module inside the Unified Sports Interface (USI).
-Built for the Khelo Tech APM machine test. Companion to the Product Thinking Document (`USI_AMS_Product_Thinking.docx`).
+Built for the Khelo Tech APM machine test. Companion to the Product Thinking Document (text version in `docs/product-thinking.txt`).
+
+All 9 mandatory modules plus the athlete mobile app are clickable: Command Center, Athlete Management, Training & Periodisation, Medical & Injury Intelligence (priority module, interactive body map), Sports Science, Nutrition, Assessments & TID, Analytics & BI, AI Copilot / AI Operations, and the Athlete App.
 
 **Open it:** `dist/index.html` (double-click; works offline except fonts/CDN scripts) or the published prototype link.
 
@@ -12,7 +14,9 @@ Built for the Khelo Tech APM machine test. Companion to the Product Thinking Doc
 4. **Switch role → Team Doctor** — clear Kavya Nair to return; a graded return-to-load plan is created.
 5. **Athletes (Ops Sanjay Verma)** — verify documents with AI pre-checks, return a document with a reason, merge a duplicate, approve an application, assign a coach.
 6. **Copilot** (top-right) — ask “who is at risk today?”, “why is Priya red?”, “move red athletes to recovery”.
-7. **Athlete App** — Priya's phone: 30-second morning check-in, post-session RPE; the staff screens update live.
+7. **Athlete App** — Priya's phone: 30-second morning check-in with a pain body map, post-session RPE, rehab pain score, water and supplement requests; the staff screens update live. Try "Ananya · no check-in" in the side panel for a fresh check-in.
+8. **Nutrition (Nutritionist Farah Khan)** — AI drafts a higher-carb plan for Priya's load jump (approve to publish), a U-17 boxer cutting 4.6% in 14 days is flagged for a doctor review, supplement requests go nutritionist → doctor, untested products are blocked.
+9. **Analytics & BI** — click a state, then a centre, to drill down; 4-week injury forecast with a what-if slider; report preview with Copy CSV and scheduling.
 
 Everything you change persists in your browser. User menu → *Reset demo data* restores the 13 Oct 2026, 07:05 starting point.
 

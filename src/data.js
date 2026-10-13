@@ -259,6 +259,8 @@
     pr.docs.forEach((d, i) => { d.id = 'ATH-10421-D' + (i + 1); d.on = '2026-02-12'; });
     if (!pr.docs.find((d) => d.type === 'Guardian consent')) pr.docs.push({ id: 'ATH-10421-D4', type: 'Guardian consent', status: 'Verified', on: '2026-02-12', ai: { ok: true, confidence: 0.93, note: 'Signature present; guardian ID matched' } });
     void prOldId;
+    // keep ids unique: the generated athlete that already held the hero id gets a fresh one
+    db.athletes.forEach((a) => { if (a !== pr && a.id === 'ATH-10421') { a.id = 'ATH-' + seq++; a.docs.forEach((d, i) => { d.id = a.id + '-D' + (i + 1); }); } });
 
     // Named supporting cast at Pune
     const rename = (squadId, idx, patch) => { const a = db.athletes.filter((x) => x.squadId === squadId)[idx]; used.delete(a.name); Object.assign(a, patch); return a; };
@@ -343,6 +345,10 @@
     pr.wellness[27] = { sleep: 2, soreness: 2, mood: 2, stress: 3, energy: 2, sleepHrs: 5.4, at: '06:31', note: 'Both hamstrings tight after Sunday trial' };
     const sw = sneha.wellness; [24, 25, 26].forEach((i) => { if (sw[i]) Object.assign(sw[i], { mood: 2, stress: 2, energy: 2, sleep: 3 }); }); sw[27] = { sleep: 2, soreness: 3, mood: 2, stress: 2, energy: 2, sleepHrs: 6.0, at: '06:48' };
     ananya.wellness[27] = null; yash.wellness[27] = { sleep: 4, soreness: 2, mood: 4, stress: 4, energy: 3, sleepHrs: 7.1, at: '06:40' };
+
+    // Realistic past compliance: ~10% of mornings missed (more at Patiala, a camp-heavy centre). Separate RNG keeps the rest of the seed stable.
+    const RW = AMS.rng(4242);
+    db.athletes.forEach((a) => { if (a.id === pr.id || a.id === sneha.id) return; for (let d = 0; d < 27; d++) if (a.wellness[d] && RW.chance(a.centreId === 'PAT' ? 0.17 : a.centreId === 'GUW' ? 0.14 : 0.08)) a.wellness[d] = null; });
 
     /* ---------- injuries */
     let injN = 2030;
@@ -488,7 +494,7 @@
       });
     });
     // Priya's first field test at the district talent hunt
-    db.tests.filter((t) => t.athleteId === pr.id).forEach((t, k) => { t.results.sprint30 = [4.52, 4.44, 4.37][k]; t.results.flying20 = [2.31, 2.27, 2.22][k]; t.results.slj = [218, 224, 231][k]; t.results.cmj = [36.1, 37.4, 38.9][k]; });
+    db.tests.filter((t) => t.athleteId === pr.id).forEach((t, k) => { t.results.sprint30 = [4.52, 4.44, 4.37][k]; t.results.flying20 = [2.31, 2.27, 2.22][k]; t.results.slj = [218, 224, 231][k]; t.results.cmj = [36.1, 37.4, 38.9][k]; if (t.results.yoyo != null) t.results.yoyo = [960, 1120, 1280][k]; if (t.results.mbt != null) t.results.mbt = [5.1, 5.6, 6.1][k]; });
     db.tests.unshift({ id: 'TST-PR-0', athleteId: pr.id, date: '2026-01-18', results: { sprint30: 4.61, flying20: 2.36, slj: 211, cmj: 34.8 }, enteredBy: 'District Talent Hunt, Pune', event: 'District Talent Hunt' });
 
     /* ---------- tasks, notifications, activity */
